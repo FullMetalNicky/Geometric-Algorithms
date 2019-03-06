@@ -104,6 +104,28 @@ cv::Mat ConvexHull::DrawConvex(std::vector<cv::Point> P)
 	return img;
 }
 
+cv::Mat ConvexHull::DrawConvexAndQueryPoint(std::vector<cv::Point> P, cv::Point q, int tangentIndex)
+{
+	P.push_back(q);
+	cv::Rect rect = cv::boundingRect(P);
+	P.pop_back();
+	cv::Mat img = cv::Mat::zeros(cv::Size(rect.x + rect.width + 10, rect.y + rect.height + 10), CV_8UC3);
+	for (int i = 0; i < P.size(); ++i)
+	{
+		cv::Point p1 = P[i] + cv::Point(5, 5);
+		cv::Point p2 = P[(i + 1) % P.size()] + cv::Point(5, 5);
+		if(i == tangentIndex) cv::circle(img, p1, 3, cv::Scalar(0, 255, 255));
+		else cv::circle(img, p1, 3, cv::Scalar(0, 0, 255));
+		cv::line(img, p1, p2, cv::Scalar(0, 255, 0));
+	}
+
+	cv::circle(img, q, 3, cv::Scalar(255, 0, 0));
+
+	cv::flip(img, img, 0);
+
+	return img;
+}
+
 
 int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q)
 {

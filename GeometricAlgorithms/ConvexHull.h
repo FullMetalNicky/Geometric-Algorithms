@@ -29,6 +29,14 @@ public:
 	**/
 	cv::Mat DrawConvex(std::vector<cv::Point> P);
 
+	/** @brief draws the polygon as points connects by lines and the query point
+		@param P - list of 2D points defining the polygon
+		@param q - query point
+		@param tangentIndex - the result of FindRightTangent function
+		@return an RGB image
+	**/
+	cv::Mat DrawConvexAndQueryPoint(std::vector<cv::Point> P, cv::Point q, int tangentIndex = -1);
+
 	/** @brief finds the right tangent for a query point and a CCW convex hull
 		@param P - list of 2D points defining a CCW convex hull
 		@param q - query point
