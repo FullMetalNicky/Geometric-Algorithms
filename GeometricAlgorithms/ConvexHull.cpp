@@ -20,39 +20,35 @@ std::vector<cv::Point> ConvexHull::GrahamsScan(std::vector<cv::Point> P)
 	{
 		int ind = CHLower.size() - 1;
 		int orient = OrientationTest::getSign(CHLower[ind - 1], CHLower[ind], P[i]);
-		if (orient > 0)
+		
+		while (OrientationTest::getSign(CHLower[ind - 1], CHLower[ind], P[i]) < 0)
 		{
-			if (i < (n - 1))
-			{
-				CHLower.push_back(P[i]);
-			}
+			CHLower.erase(CHLower.begin() + ind);
+			ind = CHLower.size() - 1;
+			if (ind == 0) break;
 		}
-		else
+		if (i != (n - 1))
 		{
-			if (i == (n - 1))
-			{
-				CHLower.erase(CHLower.begin() + ind);
-			}
-			else  CHLower[ind] = P[i];
+			CHLower.push_back(P[i]);
 		}
 	}
+
 	CHUpper.push_back(P[n - 1]);
 	CHUpper.push_back(P[n - 2]);
 	for (int i = n - 3; i >= 0; --i)
 	{
 		int ind = CHUpper.size() - 1;
 		int orient = OrientationTest::getSign(CHUpper[ind - 1], CHUpper[ind], P[i]);
-		if (orient > 0)
+		
+		while (OrientationTest::getSign(CHUpper[ind - 1], CHUpper[ind], P[i]) < 0)
 		{
-			if (i > 0) CHUpper.push_back(P[i]);
+			CHUpper.erase(CHUpper.begin() + ind);
+			ind = CHUpper.size() - 1;
+			if (ind == 0) break;
 		}
-		else
+		if (i != 0)
 		{
-			if (i == 0)
-			{
-				CHUpper.erase(CHUpper.begin() + ind);
-			}
-			else CHUpper[ind] = P[i];
+			CHUpper.push_back(P[i]);
 		}
 	}
 
@@ -99,7 +95,7 @@ cv::Mat ConvexHull::DrawConvex(std::vector<cv::Point> P)
 	{
 		cv::Point p1 = P[i] + cv::Point(5, 5);
 		cv::Point p2 = P[(i + 1) % P.size()] + cv::Point(5, 5);
-		cv::circle(img, p1, 1, cv::Scalar(0, 0, 255));
+		cv::circle(img, p1, 3, cv::Scalar(0, 0, 255));
 		cv::line(img, p1, p2, cv::Scalar(0, 255, 0));
 	}
 

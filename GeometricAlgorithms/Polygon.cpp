@@ -70,7 +70,7 @@ cv::Mat Polygon::DrawPolygon(std::vector<cv::Point> points)
 	{
 		cv::Point p1 = points[i] + cv::Point(5, 5);
 		cv::Point p2 = points[(i + 1) % points.size()] + cv::Point(5, 5);
-		cv::circle(img, p1, 1, cv::Scalar(0, 0, 255));
+		cv::circle(img, p1, 3, cv::Scalar(0, 0, 255));
 		cv::line(img, p1, p2, cv::Scalar(0, 255, 0));
 	}
 
