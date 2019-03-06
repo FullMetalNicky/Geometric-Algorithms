@@ -90,12 +90,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ConvexHull.h" />
+    <ClInclude Include="Line.h" />
     <ClInclude Include="OrientationTest.h" />
     <ClInclude Include="Polygon.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConvexHull.cpp" />
     <ClCompile Include="GeometricAlgorithms.cpp" />
+    <ClCompile Include="Line.cpp" />
     <ClCompile Include="OrientationTest.cpp" />
     <ClCompile Include="Polygon.cpp" />
   </ItemGroup>
