@@ -132,7 +132,10 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q)
 	int l = 0;
 	int h = P.size() - 1;
 
-	for (int iter = 0; iter < 1000; ++iter)
+	//with the formula m = (h + l) / 2 we can never reach the last element, so we check it here
+	if ((OrientationTest::getSign(q, P[h], P[0]) > 0) && (OrientationTest::getSign(q, P[h], P[h - 1]) > 0)) return h;
+
+	for (; ;)
 	{
 		int m = (h + l) / 2;
 		int qmm1 = OrientationTest::getSign(q, P[m], P[(m + 1) % P.size()]);
@@ -173,6 +176,72 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q)
 			{
 				int qlm = OrientationTest::getSign(q, P[l], P[m]);
 				if (qlm > 0)
+				{
+					h = m;
+				}
+				else
+				{
+					l = m;
+				}
+			}
+		}
+	}
+}
+
+
+int ConvexHull::FindMaximalDotProduct(std::vector<cv::Point> P, cv::Point q)
+{
+	int l = 0;
+	int h = P.size() - 1;
+
+	//with the formula m = (h + l) / 2 we can never reach the last element, so we check it here
+	if ((P[h].dot(q) > P[0].dot(q)) && (P[h].dot(q) > P[h - 1].dot(q))) return h;
+
+	for (; ;)
+	{
+		int m = (h + l) / 2;
+		int mq = P[m].dot(q);
+		int m1q = P[(m + 1) % P.size()].dot(q);
+		int qmm1 = P[m].dot(q) > P[(m + 1) % P.size()].dot(q);
+		if (qmm1)
+		{
+			int mq = P[m].dot(q);
+			int q1m = P[(m - 1) % P.size()].dot(q);
+			int qm1m = P[m].dot(q) > P[(m - 1) % P.size()].dot(q);
+			if (qm1m) return m;
+		}
+
+		//segment beginning configuration
+		int qll1 = P[l].dot(q) > P[(l + 1) % P.size()].dot(q);
+		if (!qll1)
+		{
+			if (qmm1)
+			{
+				h = m;
+			}
+			else
+			{
+				int qlm = P[l].dot(q) > P[m].dot(q);
+				if (!qlm)
+				{
+					l = m;
+				}
+				else
+				{
+					h = m;
+				}
+			}
+		}
+		else
+		{
+			if (!qmm1)
+			{
+				l = m;
+			}
+			else
+			{
+				int qlm = P[l].dot(q) > P[m].dot(q);
+				if (qlm)
 				{
 					h = m;
 				}

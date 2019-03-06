@@ -13,7 +13,7 @@ public:
 
 	/** @brief computes convex hull using Graham's scan
 		@param P - list of 2D points defining the polygon
-		@return a convec polygon given by a list of vertices ordered CCW
+		@return a convex polygon given by a list of vertices ordered CCW
 	**/
 	std::vector<cv::Point> GrahamsScan(std::vector<cv::Point> P);
 
@@ -40,9 +40,16 @@ public:
 	/** @brief finds the right tangent for a query point and a CCW convex hull
 		@param P - list of 2D points defining a CCW convex hull
 		@param q - query point
-		@return the index of the vertix in P which is the right tangent
+		@return the index of the vertex in P which is the right tangent
 	**/
 	int FindRightTangent(std::vector<cv::Point> P, cv::Point q);
+
+	/** @brief finds the maximal dot product between a query point and a CCW convex hull
+		@param P - list of 2D points defining a CCW convex hull
+		@param q - query point
+		@return the index of the vertex in P which is gives maximal dot product with q
+	**/
+	int FindMaximalDotProduct(std::vector<cv::Point> P, cv::Point q);
 
 };
 
