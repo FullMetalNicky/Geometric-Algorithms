@@ -1,2 +1,2 @@
 # Geometric-Algorithms
-C++ implementation for all sorts of geometric algorithm 
+C++ implementation for all sorts of geometric algorithms 
