@@ -130,10 +130,7 @@ cv::Mat ConvexHull::DrawConvexAndQueryPoint(std::vector<cv::Point> P, cv::Point 
 int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q)
 {
 	int l = 0;
-	int h = P.size() - 1;
-
-	//with the formula m = (h + l) / 2 we can never reach the last element, so we check it here
-	if ((OrientationTest::getSign(q, P[h], P[0]) > 0) && (OrientationTest::getSign(q, P[h], P[h - 1]) > 0)) return h;
+	int h = P.size();
 
 	for (; ;)
 	{
@@ -192,10 +189,7 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q)
 int ConvexHull::FindMaximalDotProduct(std::vector<cv::Point> P, cv::Point q)
 {
 	int l = 0;
-	int h = P.size() - 1;
-
-	//with the formula m = (h + l) / 2 we can never reach the last element, so we check it here
-	if ((P[h].dot(q) > P[0].dot(q)) && (P[h].dot(q) > P[h - 1].dot(q))) return h;
+	int h = P.size();
 
 	for (; ;)
 	{
