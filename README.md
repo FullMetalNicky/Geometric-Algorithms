@@ -1,5 +1,8 @@
 # Geometric-Algorithms
-C++ implementation for all sorts of geometric algorithms. I use OpenCV for point types and displaying results. 
+C++ implementation for all sorts of computational geometry problems. 
+
+## Dependencies
+I use OpenCV for point types and displaying results. 
 
 ## Implemented Algorithms
 - Graham's scan
