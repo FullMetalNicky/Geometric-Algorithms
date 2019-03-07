@@ -1,5 +1,6 @@
 #include "Polygon.h"
 #include "OrientationTest.h"
+#include <time.h> 
 
 Polygon::Polygon(std::vector<cv::Point> points)
 {
@@ -9,6 +10,7 @@ Polygon::Polygon(std::vector<cv::Point> points)
 std::vector<cv::Point> Polygon::GenerateRandom(int n, int xRange, int yRange)
 {
 	std::vector<cv::Point> P;
+	srand(time(NULL));
 
 	for (int i = 0; i < n; ++i)
 	{
