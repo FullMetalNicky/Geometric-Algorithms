@@ -194,13 +194,9 @@ int ConvexHull::FindMaximalDotProduct(std::vector<cv::Point> P, cv::Point q)
 	for (; ;)
 	{
 		int m = (h + l) / 2;
-		int mq = P[m].dot(q);
-		int m1q = P[(m + 1) % P.size()].dot(q);
 		int qmm1 = P[m].dot(q) > P[(m + 1) % P.size()].dot(q);
 		if (qmm1)
 		{
-			int mq = P[m].dot(q);
-			int q1m = P[(m - 1) % P.size()].dot(q);
 			int qm1m = P[m].dot(q) > P[(m - 1) % P.size()].dot(q);
 			if (qm1m) return m;
 		}
