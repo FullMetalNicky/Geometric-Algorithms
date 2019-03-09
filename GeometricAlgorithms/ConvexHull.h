@@ -23,6 +23,12 @@ public:
 	**/
 	std::vector<cv::Point> JarvisMarch(std::vector<cv::Point> P, cv::Mat debug = cv::Mat());
 
+	/** @brief computes convex hull using Chan's algoritm
+		@param P - list of 2D points defining the polygon
+		@return a convex polygon given by a list of vertices ordered CCW
+	**/
+	std::vector<cv::Point> ChansAlgorithm(std::vector<cv::Point> P, cv::Mat debug = cv::Mat());
+
 	/** @brief checks if a list of vertices are defining a CCW convex hull
 		@param P - list of 2D points defining the polygon
 		@return true if it's a CCW convex hull, false otherwise

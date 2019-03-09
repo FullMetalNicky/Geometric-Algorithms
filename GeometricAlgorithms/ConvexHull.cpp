@@ -7,6 +7,8 @@ std::vector<cv::Point> ConvexHull::GrahamsScan(std::vector<cv::Point> P, cv::Mat
 	std::vector<cv::Point> CHLower;
 	int n = P.size();
 	
+	if (n < 3) return std::vector<cv::Point>();
+
 	//sort by x axis
 	std::sort(P.begin(), P.end(), [](cv::Point p1, cv::Point p2) {
 
@@ -60,6 +62,9 @@ std::vector<cv::Point> ConvexHull::JarvisMarch(std::vector<cv::Point> P, cv::Mat
 {
 	std::vector<cv::Point> CH;
 	int n = P.size();
+
+	if (n < 3) return CH;
+
 	 cv::Point p0 = *std::min_element(P.begin(), P.end(), [](cv::Point p1, cv::Point p2) {
 
 		return ((p1.x == p2.x) ? (p1.y < p2.y) : (p1.x < p2.x));
@@ -85,8 +90,91 @@ std::vector<cv::Point> ConvexHull::JarvisMarch(std::vector<cv::Point> P, cv::Mat
 	return CH;
 }
 
+std::vector<cv::Point> ConvexHull::ChansAlgorithm(std::vector<cv::Point> P, cv::Mat debug)
+{
+
+	int m = 4;
+	int n = P.size();
+
+	if (n < 3) return std::vector<cv::Point>();
+
+	//repeat until m >= h
+	while (true)
+	{		
+		int r = int(ceil((float(n) / float(m))));
+		std::vector<std::vector<cv::Point>> miniPs(r, std::vector<cv::Point>());
+		std::vector<std::vector<cv::Point>> miniCHs(r, std::vector<cv::Point>());
+		int leftmostInd = -1;
+		cv::Point leftmostPoint = cv::Point(INT_MAX, INT_MAX);
+
+		for (int i = 0; i < r; ++i)
+		{
+			//divide into m roups of size r each
+			if((i + 1) * m >= n) miniPs[i].insert(miniPs[i].end(), P.begin() + i * m, P.end());
+			else miniPs[i].insert(miniPs[i].end(), P.begin() + i * m, P.begin() + (i + 1) * m);
+
+			//compte Graham's scan for each minihull
+			if (miniPs[i].size() < 3) miniCHs[i] = miniPs[i];
+			else miniCHs[i] = GrahamsScan(miniPs[i], debug);
+
+			//find the leftmost minihull
+			cv::Point pLeft = *std::min_element(miniCHs[i].begin(), miniCHs[i].end(), [](cv::Point p1, cv::Point p2) {
+
+				return ((p1.x == p2.x) ? (p1.y < p2.y) : (p1.x < p2.x));
+			});
+
+			if ((pLeft.x < leftmostPoint.x) || ((pLeft.x == leftmostPoint.x) && (pLeft.y == leftmostPoint.y)))
+			{
+				leftmostPoint = pLeft;
+				leftmostInd = i;
+			}
+		}
+
+		//start with the miniCH that has the leftmost point, so it has to be on the hull
+		std::vector<cv::Point> CH;
+		CH.push_back(leftmostPoint);
+
+		for(int step = 0; step < m; ++m)
+		{
+			std::vector<cv::Point> rightTanVert;
+			rightTanVert.push_back(CH[CH.size() - 1]);
+
+			//find right tangent for all minihulls
+			for (int i = 0; i < r; ++i)
+			{
+				int m = FindRightTangent(miniCHs[i], CH[CH.size() - 1], debug);
+				if (m == -1)
+				{
+					if (miniCHs[i].size() == 1)
+					{
+						rightTanVert.push_back(miniCHs[i][0]);
+					}
+					else //2 element in this minihull
+					{
+						if(OrientationTest::getSign(CH[CH.size() - 1], miniCHs[i][0], miniCHs[i][1]) > 0) rightTanVert.push_back(miniCHs[i][0]);
+						else rightTanVert.push_back(miniCHs[i][1]);
+					}
+				}
+				else rightTanVert.push_back(miniCHs[i][m]);
+			}
+
+			//find the correct right tangent for the current point
+			std::vector<cv::Point> tmp = JarvisMarch(rightTanVert, debug);
+			if (tmp[1] == CH[0])
+			{
+				return CH;
+			}
+			CH.push_back(tmp[1]);
+		}
+		// squaring scheme
+		m = m * m;
+	}
+}
+
 bool ConvexHull::IsConvex(std::vector<cv::Point> P)
 {
+	if (P.size() < 3) return false;
+
 	//sort by x axis
 	std::sort(P.begin(), P.end(), [](cv::Point p1, cv::Point p2) {
 
@@ -156,8 +244,16 @@ cv::Mat ConvexHull::DrawConvexAndQueryPoint(std::vector<cv::Point> P, cv::Point 
 
 int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q, cv::Mat debug)
 {
+	if (P.size() < 3) return -1;
+
 	int l = 0;
 	int h = P.size();
+
+	if (P.end() != std::find(P.begin(), P.end(), q))
+	{
+		int ind = std::distance(P.begin(), std::find(P.begin(), P.end(), q));
+		return (ind + 1) % P.size();
+	}
 
 	if ((OrientationTest::getSign(q, P[0], P[P.size() - 1]) > 0) && (OrientationTest::getSign(q, P[0], P[1]) > 0)) return 0;
 
@@ -217,6 +313,8 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q, cv::Mat 
 
 int ConvexHull::FindMaximalDotProduct(std::vector<cv::Point> P, cv::Point q, cv::Mat debug)
 {
+	if (P.size() < 3) return -1;
+
 	int l = 0;
 	int h = P.size();
 
