@@ -7,6 +7,7 @@ I use OpenCV for point types and displaying results.
 ## Implemented Algorithms
 - Graham's scan
 - Jarvis march
+- Chan's algorithm
 - Right tangent between a convex polygon and a query point
 - Maximal dot product (support) between a convex polygon and a query point
 - Check if some polygon is a CCW convex hull
