@@ -21,5 +21,3 @@ I use OpenCV for point types and displaying results.
 - Arrange as static library and app
 - Add tests
 - Clean the code
-- Add documentation
-- Chan's algorithm
