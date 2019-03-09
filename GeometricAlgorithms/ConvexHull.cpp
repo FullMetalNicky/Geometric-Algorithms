@@ -173,7 +173,8 @@ std::vector<cv::Point> ConvexHull::ChansAlgorithm(std::vector<cv::Point> P, cv::
 
 bool ConvexHull::IsConvex(std::vector<cv::Point> P)
 {
-	if (P.size() < 3) return false;
+	int n = P.size();
+	if (n < 3) return false;
 
 	//sort by x axis
 	std::sort(P.begin(), P.end(), [](cv::Point p1, cv::Point p2) {
@@ -181,7 +182,7 @@ bool ConvexHull::IsConvex(std::vector<cv::Point> P)
 		return ((p1.x == p2.x) ? (p1.y < p2.y) : (p1.x < p2.x));
 	});
 
-	int n = P.size();
+	
 	int signChanges = 0;
 
 	for (int i = 0; i < n; ++i)
@@ -206,10 +207,12 @@ cv::Mat ConvexHull::DrawConvex(std::vector<cv::Point> P)
 {
 	cv::Rect rect = cv::boundingRect(P);
 	cv::Mat img = cv::Mat::zeros(cv::Size(rect.x + rect.width + 10, rect.y + rect.height + 10), CV_8UC3);
-	for (int i = 0; i < P.size(); ++i)
+	int n = P.size();
+
+	for (int i = 0; i < n; ++i)
 	{
 		cv::Point p1 = P[i] + cv::Point(5, 5);
-		cv::Point p2 = P[(i + 1) % P.size()] + cv::Point(5, 5);
+		cv::Point p2 = P[(i + 1) % n] + cv::Point(5, 5);
 		cv::circle(img, p1, 3, cv::Scalar(0, 0, 255));
 		cv::line(img, p1, p2, cv::Scalar(0, 255, 0));
 	}
@@ -225,10 +228,12 @@ cv::Mat ConvexHull::DrawConvexAndQueryPoint(std::vector<cv::Point> P, cv::Point 
 	cv::Rect rect = cv::boundingRect(P);
 	P.pop_back();
 	cv::Mat img = cv::Mat::zeros(cv::Size(rect.x + rect.width + 10, rect.y + rect.height + 10), CV_8UC3);
-	for (int i = 0; i < P.size(); ++i)
+	int n = P.size();
+
+	for (int i = 0; i < n; ++i)
 	{
 		cv::Point p1 = P[i] + cv::Point(5, 5);
-		cv::Point p2 = P[(i + 1) % P.size()] + cv::Point(5, 5);
+		cv::Point p2 = P[(i + 1) % n] + cv::Point(5, 5);
 		if(i == tangentIndex) cv::circle(img, p1, 3, cv::Scalar(0, 255, 255));
 		else cv::circle(img, p1, 3, cv::Scalar(0, 0, 255));
 		cv::line(img, p1, p2, cv::Scalar(0, 255, 0));
@@ -244,32 +249,31 @@ cv::Mat ConvexHull::DrawConvexAndQueryPoint(std::vector<cv::Point> P, cv::Point 
 
 int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q, cv::Mat debug)
 {
-	if (P.size() < 3) return -1;
+	int n = P.size();
+	if (n < 3) return -1;
 
 	int l = 0;
-	int h = P.size();
+	int h = n;
 
 	if (P.end() != std::find(P.begin(), P.end(), q))
 	{
 		int ind = std::distance(P.begin(), std::find(P.begin(), P.end(), q));
-		return (ind + 1) % P.size();
+		return (ind + 1) % n;
 	}
 
-	if ((OrientationTest::getSign(q, P[0], P[P.size() - 1]) > 0) && (OrientationTest::getSign(q, P[0], P[1]) > 0)) return 0;
+	if ((OrientationTest::getSign(q, P[0], P[n - 1]) > 0) && (OrientationTest::getSign(q, P[0], P[1]) > 0)) return 0;
 
 	for (; ;)
 	{
 		int m = (h + l) / 2;
-		int qmm1 = OrientationTest::getSign(q, P[m], P[(m + 1) % P.size()]);
+		int qmm1 = OrientationTest::getSign(q, P[m], P[(m + 1) % n]);
 		if (qmm1 > 0)
 		{
-			int qm1m = OrientationTest::getSign(q, P[m], P[(m - 1) % P.size()]);
-			if (qm1m > 0) return m;
+			if (OrientationTest::getSign(q, P[m], P[(m - 1) % n]) > 0) return m;
 		}
 
 		//segment beginning configuration
-		int qll1 = OrientationTest::getSign(q, P[l], P[(l + 1) % P.size()]);
-		if (qll1 < 0)
+		if (OrientationTest::getSign(q, P[l], P[(l + 1) % n]) < 0)
 		{
 			if (qmm1 > 0)
 			{
@@ -277,8 +281,7 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q, cv::Mat 
 			}
 			else
 			{
-				int qlm = OrientationTest::getSign(q, P[l], P[m]);
-				if (qlm < 0)
+				if (OrientationTest::getSign(q, P[l], P[m]) < 0)
 				{
 					l = m;
 				}
@@ -296,8 +299,7 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q, cv::Mat 
 			}
 			else
 			{
-				int qlm = OrientationTest::getSign(q, P[l], P[m]);
-				if (qlm > 0)
+				if (OrientationTest::getSign(q, P[l], P[m]) > 0)
 				{
 					h = m;
 				}
@@ -313,26 +315,25 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q, cv::Mat 
 
 int ConvexHull::FindMaximalDotProduct(std::vector<cv::Point> P, cv::Point q, cv::Mat debug)
 {
-	if (P.size() < 3) return -1;
+	int n = P.size();
+	if (n < 3) return -1;
 
 	int l = 0;
-	int h = P.size();
+	int h = n;
 
-	if ((P[0].dot(q) > P[P.size() - 1].dot(q)) && (P[0].dot(q) > P[1].dot(q))) return 0;
+	if ((P[0].dot(q) > P[n - 1].dot(q)) && (P[0].dot(q) > P[1].dot(q))) return 0;
 
 	for (; ;)
 	{
 		int m = (h + l) / 2;
-		int qmm1 = P[m].dot(q) > P[(m + 1) % P.size()].dot(q);
+		int qmm1 = P[m].dot(q) > P[(m + 1) % n].dot(q);
 		if (qmm1)
 		{
-			int qm1m = P[m].dot(q) > P[(m - 1) % P.size()].dot(q);
-			if (qm1m) return m;
+			if (P[m].dot(q) > P[(m - 1) % n].dot(q)) return m;
 		}
 
 		//segment beginning configuration
-		int qll1 = P[l].dot(q) > P[(l + 1) % P.size()].dot(q);
-		if (!qll1)
+		if (!(P[l].dot(q) > P[(l + 1) % n].dot(q)))
 		{
 			if (qmm1)
 			{
@@ -340,8 +341,7 @@ int ConvexHull::FindMaximalDotProduct(std::vector<cv::Point> P, cv::Point q, cv:
 			}
 			else
 			{
-				int qlm = P[l].dot(q) > P[m].dot(q);
-				if (!qlm)
+				if (!(P[l].dot(q) > P[m].dot(q)))
 				{
 					l = m;
 				}
@@ -359,8 +359,7 @@ int ConvexHull::FindMaximalDotProduct(std::vector<cv::Point> P, cv::Point q, cv:
 			}
 			else
 			{
-				int qlm = P[l].dot(q) > P[m].dot(q);
-				if (qlm)
+				if (P[l].dot(q) > P[m].dot(q))
 				{
 					h = m;
 				}
