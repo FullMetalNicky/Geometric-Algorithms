@@ -26,7 +26,23 @@ public:
 		@param r - third point
 		@return angle between the points
 	**/
-	static int getAngle(cv::Point p, cv::Point q, cv::Point r);
+	static float getAngle(cv::Point p, cv::Point q, cv::Point r);
+
+	/** @brief computes the cross product between 3 points (cross product)
+		@param p - first point
+		@param q - second point
+		@param r - third point
+		@return cross product between the points
+	**/
+	static int crossProduct(cv::Point p, cv::Point q, cv::Point r);
+
+	/** @brief computes the dot product between 3 points (cross product)
+		@param p - first point
+		@param q - second point
+		@param r - third point
+		@return d otproduct between the points
+	**/
+	static int dotProduct(cv::Point p, cv::Point q, cv::Point r);
 };
 
 #endif

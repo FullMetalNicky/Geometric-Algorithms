@@ -1,7 +1,7 @@
 #include "ConvexHull.h"
 #include "OrientationTest.h"
 
-std::vector<cv::Point> ConvexHull::GrahamsScan(std::vector<cv::Point> P)
+std::vector<cv::Point> ConvexHull::GrahamsScan(std::vector<cv::Point> P, cv::Mat debug)
 {
 	std::vector<cv::Point> CHUpper;
 	std::vector<cv::Point> CHLower;
@@ -19,7 +19,6 @@ std::vector<cv::Point> ConvexHull::GrahamsScan(std::vector<cv::Point> P)
 	for (int i = 2; i < n; ++i)
 	{
 		int ind = CHLower.size() - 1;
-		int orient = OrientationTest::getSign(CHLower[ind - 1], CHLower[ind], P[i]);
 		
 		while (OrientationTest::getSign(CHLower[ind - 1], CHLower[ind], P[i]) < 0)
 		{
@@ -38,7 +37,6 @@ std::vector<cv::Point> ConvexHull::GrahamsScan(std::vector<cv::Point> P)
 	for (int i = n - 3; i >= 0; --i)
 	{
 		int ind = CHUpper.size() - 1;
-		int orient = OrientationTest::getSign(CHUpper[ind - 1], CHUpper[ind], P[i]);
 		
 		while (OrientationTest::getSign(CHUpper[ind - 1], CHUpper[ind], P[i]) < 0)
 		{
@@ -54,6 +52,35 @@ std::vector<cv::Point> ConvexHull::GrahamsScan(std::vector<cv::Point> P)
 
 	std::vector<cv::Point> CH(CHLower);
 	CH.insert(CH.end(), CHUpper.begin(), CHUpper.end());
+
+	return CH;
+}
+
+std::vector<cv::Point> ConvexHull::JarvisMarch(std::vector<cv::Point> P, cv::Mat debug)
+{
+	std::vector<cv::Point> CH;
+	int n = P.size();
+	 cv::Point p0 = *std::min_element(P.begin(), P.end(), [](cv::Point p1, cv::Point p2) {
+
+		return ((p1.x == p2.x) ? (p1.y < p2.y) : (p1.x < p2.x));
+	});
+
+	 int first = 0;
+	 int current = 0;
+	 int next = 0;
+	 do
+	 {
+		 CH.push_back(P[current]);
+		
+		 next = (current + 1) % n;
+		 for (int i = 0; i < n; i++)
+		 {
+			//check if there is a point that is more CCW than the current one
+			 if (OrientationTest::getSign(P[current], P[i], P[next]) > 0) next = i;
+		 }
+		
+		 current = next;
+	 } while (next != first);  // full circle
 
 	return CH;
 }
@@ -127,10 +154,12 @@ cv::Mat ConvexHull::DrawConvexAndQueryPoint(std::vector<cv::Point> P, cv::Point 
 }
 
 
-int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q)
+int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q, cv::Mat debug)
 {
 	int l = 0;
 	int h = P.size();
+
+	if ((OrientationTest::getSign(q, P[0], P[P.size() - 1]) > 0) && (OrientationTest::getSign(q, P[0], P[1]) > 0)) return 0;
 
 	for (; ;)
 	{
@@ -186,10 +215,12 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q)
 }
 
 
-int ConvexHull::FindMaximalDotProduct(std::vector<cv::Point> P, cv::Point q)
+int ConvexHull::FindMaximalDotProduct(std::vector<cv::Point> P, cv::Point q, cv::Mat debug)
 {
 	int l = 0;
 	int h = P.size();
+
+	if ((P[0].dot(q) > P[P.size() - 1].dot(q)) && (P[0].dot(q) > P[1].dot(q))) return 0;
 
 	for (; ;)
 	{
