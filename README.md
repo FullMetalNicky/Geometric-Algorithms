@@ -18,6 +18,5 @@ I use OpenCV for point types and displaying results.
 - Visualizing polygons and query points
 
 ## To Do
-- Arrange as static library and app
 - Add tests
 - Clean the code
