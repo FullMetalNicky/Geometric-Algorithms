@@ -97,8 +97,8 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>opencv_world310.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(OPENCV_PATH)/x64/vc14/lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_world400.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OPENCV_PATH)/x64/vc15/lib</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -118,8 +118,8 @@
       <AdditionalIncludeDirectories>$(OPENCV_PATH)/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>opencv_world310d.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(OPENCV_PATH)/x64/vc14/lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_world400d.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OPENCV_PATH)/x64/vc15/lib</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
