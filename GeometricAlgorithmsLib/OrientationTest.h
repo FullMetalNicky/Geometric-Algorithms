@@ -34,7 +34,7 @@ public:
 		@param r - third Point2f
 		@return cross product between the Point2fs
 	**/
-	static int crossProduct(cv::Point2f p, cv::Point2f q, cv::Point2f r);
+	static float crossProduct(cv::Point2f p, cv::Point2f q, cv::Point2f r);
 
 	/** @brief computes the dot product between 3 Point2fs (cross product)
 		@param p - first Point2f
@@ -42,7 +42,7 @@ public:
 		@param r - third Point2f
 		@return d otproduct between the Point2fs
 	**/
-	static int dotProduct(cv::Point2f p, cv::Point2f q, cv::Point2f r);
+	static float dotProduct(cv::Point2f p, cv::Point2f q, cv::Point2f r);
 };
 
 #endif

@@ -1,6 +1,7 @@
 #include "Polygon.h"
 #include "OrientationTest.h"
 #include <time.h> 
+#include <random>
 
 Polygon::Polygon(std::vector<cv::Point2f> Point2fs)
 {
@@ -10,14 +11,18 @@ Polygon::Polygon(std::vector<cv::Point2f> Point2fs)
 std::vector<cv::Point2f> Polygon::GenerateRandom(int n, int xRange, int yRange)
 {
 	std::vector<cv::Point2f> P;
-	srand(time(NULL));
+	std::random_device rd;  
+	std::mt19937 randGen(rd()); 
+	std::uniform_real_distribution<> randDistX(0.0, float(xRange));
+	std::uniform_real_distribution<> randDistY(0.0, float(yRange));
+
 
 	for (int i = 0; i < n; ++i)
 	{
-		int x = rand() % xRange;
-		int y = rand() % yRange;
+		float x = randDistX(randGen);
+		float y = randDistY(randGen);
 		cv::Point2f p(x, y);
-		if (P.end() == std::find(P.begin(), P.end(), p))
+		//if (P.end() == std::find(P.begin(), P.end(), p))
 		{
 			P.push_back(p);
 		}

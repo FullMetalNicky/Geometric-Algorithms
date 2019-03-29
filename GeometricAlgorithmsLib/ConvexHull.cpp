@@ -239,6 +239,11 @@ cv::Mat ConvexHull::DrawConvexAndQueryPoint2f(std::vector<cv::Point2f> P, cv::Po
 		cv::line(img, p1, p2, cv::Scalar(0, 255, 0));
 	}
 
+	if (-1 != tangentIndex)
+	{
+		cv::line(img, P[tangentIndex], q, cv::Scalar(255, 255, 255));
+	}
+
 	cv::circle(img, q, 3, cv::Scalar(255, 0, 0));
 
 	cv::flip(img, img, 0);
@@ -266,14 +271,15 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point2f> P, cv::Point2f q, cv::
 	for (; ;)
 	{
 		int m = (h + l) / 2;
+		if (0 == m) return -1;
 		int qmm1 = OrientationTest::getSign(q, P[m], P[(m + 1) % n]);
-		if (qmm1 > 0)
+		if (qmm1 > 0.0f)
 		{
-			if (OrientationTest::getSign(q, P[m], P[(m - 1) % n]) > 0) return m;
+			if (OrientationTest::getSign(q, P[m], P[(m - 1) % n]) > 0.0f) return m;
 		}
 
 		//segment beginning configuration
-		if (OrientationTest::getSign(q, P[l], P[(l + 1) % n]) < 0)
+		if (OrientationTest::getSign(q, P[l], P[(l + 1) % n]) < 0.0f)
 		{
 			if (qmm1 > 0)
 			{
@@ -281,7 +287,7 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point2f> P, cv::Point2f q, cv::
 			}
 			else
 			{
-				if (OrientationTest::getSign(q, P[l], P[m]) < 0)
+				if (OrientationTest::getSign(q, P[l], P[m]) < 0.0f)
 				{
 					l = m;
 				}
@@ -299,7 +305,7 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point2f> P, cv::Point2f q, cv::
 			}
 			else
 			{
-				if (OrientationTest::getSign(q, P[l], P[m]) > 0)
+				if (OrientationTest::getSign(q, P[l], P[m]) > 0.0f)
 				{
 					h = m;
 				}
