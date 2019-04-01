@@ -19,11 +19,19 @@ public:
 	std::vector<cv::Point2f> GrahamsScan(std::vector<cv::Point2f> P, cv::Mat debug = cv::Mat());
 
 	/** @brief computes convex hull using Jarvis march
-		@param P - list of 2D Point2fs defining the polygon
+		@param P - list of 2D Points defining the polygon
 		@param debug - Optionary. An image of the polygon P, for debugging purposes
 		@return a convex polygon given by a list of vertices ordered CCW
 	**/
 	std::vector<cv::Point2f> JarvisMarch(std::vector<cv::Point2f> P, cv::Mat debug = cv::Mat());
+
+	/** @brief computes one step of Jarvis march - computing the right tangent for point q, where P is some general set of points
+		@param P - list of 2D Points
+		@param q - query point
+		@param debug - Optionary. An image of the polygon P, for debugging purposes
+		@return an index of the point in P that is a right tangent to q
+	**/
+	int JarvisStep(std::vector<cv::Point2f> P, cv::Point2f q, cv::Mat debug = cv::Mat());
 
 	/** @brief computes convex hull using Chan's algoritm
 		@param P - list of 2D Point2fs defining the polygon

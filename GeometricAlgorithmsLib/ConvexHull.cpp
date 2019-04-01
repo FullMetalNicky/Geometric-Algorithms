@@ -90,12 +90,28 @@ std::vector<cv::Point2f> ConvexHull::JarvisMarch(std::vector<cv::Point2f> P, cv:
 	return CH;
 }
 
+int ConvexHull::JarvisStep(std::vector<cv::Point2f> P, cv::Point2f q, cv::Mat debug)
+{
+	std::vector<cv::Point2f> CH;
+	int n = P.size();
+
+	if (n < 3) return -1;
+	int next = 0;
+	for (int i = 0; i < n; i++)
+	{
+		//check if there is a Point2f that is more CCW than the current one
+		if (OrientationTest::getSign(q, P[i], P[next]) > 0) next = i;
+	}
+
+	return next;
+}
+
 std::vector<cv::Point2f> ConvexHull::ChansAlgorithm(std::vector<cv::Point2f> P, cv::Mat debug)
 {
 
 	int m = 4;
 	int n = P.size();
-
+	
 	if (n < 3) return std::vector<cv::Point2f>();
 
 	//repeat until m >= h
@@ -137,12 +153,21 @@ std::vector<cv::Point2f> ConvexHull::ChansAlgorithm(std::vector<cv::Point2f> P, 
 		for(int step = 0; step < m; ++m)
 		{
 			std::vector<cv::Point2f> rightTanVert;
-			rightTanVert.push_back(CH[CH.size() - 1]);
+			// q is the point for we search the right tangent in step i
+			cv::Point q = CH[CH.size() - 1];
 
 			//find right tangent for all minihulls
 			for (int i = 0; i < r; ++i)
 			{
-				int m = FindRightTangent(miniCHs[i], CH[CH.size() - 1], debug);
+				int m = -1;
+				//if the query point is part of the minihull, just take the next point on the hull as tangent
+				if (miniCHs[i].end() != std::find(miniCHs[i].begin(), miniCHs[i].end(), CH[CH.size() - 1]))
+				{
+					int ind = std::distance(miniCHs[i].begin(), std::find(miniCHs[i].begin(), miniCHs[i].end(), CH[CH.size() - 1]));
+					m = (ind + 1) % miniCHs[i].size();
+				}
+				//otherwise find the tangent
+				else  m = FindRightTangent(miniCHs[i], CH[CH.size() - 1], debug);
 				if (m == -1)
 				{
 					if (miniCHs[i].size() == 1)
@@ -159,13 +184,21 @@ std::vector<cv::Point2f> ConvexHull::ChansAlgorithm(std::vector<cv::Point2f> P, 
 			}
 
 			//find the correct right tangent for the current Point2f
-			std::vector<cv::Point2f> tmp = JarvisMarch(rightTanVert, debug);
-			if (tmp[1] == CH[0])
+			int ind = JarvisStep(rightTanVert, CH[CH.size() - 1]);
+			if (ind != -1)
 			{
-				return CH;
+				if (CH[0] == rightTanVert[ind]) return CH;
+				else
+				{
+					CH.push_back(rightTanVert[ind]);
+				}
 			}
-			CH.push_back(tmp[1]);
+			else
+			{
+				std::cout << "idiot" << std::endl;
+			}		
 		}
+
 		// squaring scheme
 		m = m * m;
 	}
@@ -260,11 +293,12 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point2f> P, cv::Point2f q, cv::
 	int l = 0;
 	int h = n;
 
-	if (P.end() != std::find(P.begin(), P.end(), q))
+	//move outside the func
+	/*if (P.end() != std::find(P.begin(), P.end(), q))
 	{
 		int ind = std::distance(P.begin(), std::find(P.begin(), P.end(), q));
 		return (ind + 1) % n;
-	}
+	}*/
 
 	if ((OrientationTest::getSign(q, P[0], P[n - 1]) > 0) && (OrientationTest::getSign(q, P[0], P[1]) > 0)) return 0;
 
