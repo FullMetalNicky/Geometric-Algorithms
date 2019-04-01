@@ -1,16 +1,16 @@
 #include "ConvexHull.h"
 #include "OrientationTest.h"
 
-std::vector<cv::Point> ConvexHull::GrahamsScan(std::vector<cv::Point> P, cv::Mat debug)
+std::vector<cv::Point2f> ConvexHull::GrahamsScan(std::vector<cv::Point2f> P, cv::Mat debug)
 {
-	std::vector<cv::Point> CHUpper;
-	std::vector<cv::Point> CHLower;
+	std::vector<cv::Point2f> CHUpper;
+	std::vector<cv::Point2f> CHLower;
 	int n = P.size();
 	
-	if (n < 3) return std::vector<cv::Point>();
+	if (n < 3) return std::vector<cv::Point2f>();
 
 	//sort by x axis
-	std::sort(P.begin(), P.end(), [](cv::Point p1, cv::Point p2) {
+	std::sort(P.begin(), P.end(), [](cv::Point2f p1, cv::Point2f p2) {
 
 		return ((p1.x == p2.x) ? (p1.y < p2.y) : (p1.x < p2.x));
 	});
@@ -52,20 +52,20 @@ std::vector<cv::Point> ConvexHull::GrahamsScan(std::vector<cv::Point> P, cv::Mat
 		}
 	}
 
-	std::vector<cv::Point> CH(CHLower);
+	std::vector<cv::Point2f> CH(CHLower);
 	CH.insert(CH.end(), CHUpper.begin(), CHUpper.end());
 
 	return CH;
 }
 
-std::vector<cv::Point> ConvexHull::JarvisMarch(std::vector<cv::Point> P, cv::Mat debug)
+std::vector<cv::Point2f> ConvexHull::JarvisMarch(std::vector<cv::Point2f> P, cv::Mat debug)
 {
-	std::vector<cv::Point> CH;
+	std::vector<cv::Point2f> CH;
 	int n = P.size();
 
 	if (n < 3) return CH;
 
-	 cv::Point p0 = *std::min_element(P.begin(), P.end(), [](cv::Point p1, cv::Point p2) {
+	 cv::Point2f p0 = *std::min_element(P.begin(), P.end(), [](cv::Point2f p1, cv::Point2f p2) {
 
 		return ((p1.x == p2.x) ? (p1.y < p2.y) : (p1.x < p2.x));
 	});
@@ -80,7 +80,7 @@ std::vector<cv::Point> ConvexHull::JarvisMarch(std::vector<cv::Point> P, cv::Mat
 		 next = (current + 1) % n;
 		 for (int i = 0; i < n; i++)
 		 {
-			//check if there is a point that is more CCW than the current one
+			//check if there is a Point2f that is more CCW than the current one
 			 if (OrientationTest::getSign(P[current], P[i], P[next]) > 0) next = i;
 		 }
 		
@@ -90,22 +90,38 @@ std::vector<cv::Point> ConvexHull::JarvisMarch(std::vector<cv::Point> P, cv::Mat
 	return CH;
 }
 
-std::vector<cv::Point> ConvexHull::ChansAlgorithm(std::vector<cv::Point> P, cv::Mat debug)
+int ConvexHull::JarvisStep(std::vector<cv::Point2f> P, cv::Point2f q, cv::Mat debug)
+{
+	std::vector<cv::Point2f> CH;
+	int n = P.size();
+
+	if (n < 3) return -1;
+	int next = 0;
+	for (int i = 0; i < n; i++)
+	{
+		//check if there is a Point2f that is more CCW than the current one
+		if (OrientationTest::getSign(q, P[i], P[next]) > 0) next = i;
+	}
+
+	return next;
+}
+
+std::vector<cv::Point2f> ConvexHull::ChansAlgorithm(std::vector<cv::Point2f> P, cv::Mat debug)
 {
 
 	int m = 4;
 	int n = P.size();
-
-	if (n < 3) return std::vector<cv::Point>();
+	
+	if (n < 3) return std::vector<cv::Point2f>();
 
 	//repeat until m >= h
 	while (true)
 	{		
 		int r = int(ceil((float(n) / float(m))));
-		std::vector<std::vector<cv::Point>> miniPs(r, std::vector<cv::Point>());
-		std::vector<std::vector<cv::Point>> miniCHs(r, std::vector<cv::Point>());
+		std::vector<std::vector<cv::Point2f>> miniPs(r, std::vector<cv::Point2f>());
+		std::vector<std::vector<cv::Point2f>> miniCHs(r, std::vector<cv::Point2f>());
 		int leftmostInd = -1;
-		cv::Point leftmostPoint = cv::Point(INT_MAX, INT_MAX);
+		cv::Point2f leftmostPoint2f = cv::Point2f(INT_MAX, INT_MAX);
 
 		for (int i = 0; i < r; ++i)
 		{
@@ -118,31 +134,40 @@ std::vector<cv::Point> ConvexHull::ChansAlgorithm(std::vector<cv::Point> P, cv::
 			else miniCHs[i] = GrahamsScan(miniPs[i], debug);
 
 			//find the leftmost minihull
-			cv::Point pLeft = *std::min_element(miniCHs[i].begin(), miniCHs[i].end(), [](cv::Point p1, cv::Point p2) {
+			cv::Point2f pLeft = *std::min_element(miniCHs[i].begin(), miniCHs[i].end(), [](cv::Point2f p1, cv::Point2f p2) {
 
 				return ((p1.x == p2.x) ? (p1.y < p2.y) : (p1.x < p2.x));
 			});
 
-			if ((pLeft.x < leftmostPoint.x) || ((pLeft.x == leftmostPoint.x) && (pLeft.y == leftmostPoint.y)))
+			if ((pLeft.x < leftmostPoint2f.x) || ((pLeft.x == leftmostPoint2f.x) && (pLeft.y == leftmostPoint2f.y)))
 			{
-				leftmostPoint = pLeft;
+				leftmostPoint2f = pLeft;
 				leftmostInd = i;
 			}
 		}
 
-		//start with the miniCH that has the leftmost point, so it has to be on the hull
-		std::vector<cv::Point> CH;
-		CH.push_back(leftmostPoint);
+		//start with the miniCH that has the leftmost Point2f, so it has to be on the hull
+		std::vector<cv::Point2f> CH;
+		CH.push_back(leftmostPoint2f);
 
 		for(int step = 0; step < m; ++m)
 		{
-			std::vector<cv::Point> rightTanVert;
-			rightTanVert.push_back(CH[CH.size() - 1]);
+			std::vector<cv::Point2f> rightTanVert;
+			// q is the point for we search the right tangent in step i
+			cv::Point q = CH[CH.size() - 1];
 
 			//find right tangent for all minihulls
 			for (int i = 0; i < r; ++i)
 			{
-				int m = FindRightTangent(miniCHs[i], CH[CH.size() - 1], debug);
+				int m = -1;
+				//if the query point is part of the minihull, just take the next point on the hull as tangent
+				if (miniCHs[i].end() != std::find(miniCHs[i].begin(), miniCHs[i].end(), CH[CH.size() - 1]))
+				{
+					int ind = std::distance(miniCHs[i].begin(), std::find(miniCHs[i].begin(), miniCHs[i].end(), CH[CH.size() - 1]));
+					m = (ind + 1) % miniCHs[i].size();
+				}
+				//otherwise find the tangent
+				else  m = FindRightTangent(miniCHs[i], CH[CH.size() - 1], debug);
 				if (m == -1)
 				{
 					if (miniCHs[i].size() == 1)
@@ -158,26 +183,34 @@ std::vector<cv::Point> ConvexHull::ChansAlgorithm(std::vector<cv::Point> P, cv::
 				else rightTanVert.push_back(miniCHs[i][m]);
 			}
 
-			//find the correct right tangent for the current point
-			std::vector<cv::Point> tmp = JarvisMarch(rightTanVert, debug);
-			if (tmp[1] == CH[0])
+			//find the correct right tangent for the current Point2f
+			int ind = JarvisStep(rightTanVert, CH[CH.size() - 1]);
+			if (ind != -1)
 			{
-				return CH;
+				if (CH[0] == rightTanVert[ind]) return CH;
+				else
+				{
+					CH.push_back(rightTanVert[ind]);
+				}
 			}
-			CH.push_back(tmp[1]);
+			else
+			{
+				std::cout << "idiot" << std::endl;
+			}		
 		}
+
 		// squaring scheme
 		m = m * m;
 	}
 }
 
-bool ConvexHull::IsConvex(std::vector<cv::Point> P)
+bool ConvexHull::IsConvex(std::vector<cv::Point2f> P)
 {
 	int n = P.size();
 	if (n < 3) return false;
 
 	//sort by x axis
-	std::sort(P.begin(), P.end(), [](cv::Point p1, cv::Point p2) {
+	std::sort(P.begin(), P.end(), [](cv::Point2f p1, cv::Point2f p2) {
 
 		return ((p1.x == p2.x) ? (p1.y < p2.y) : (p1.x < p2.x));
 	});
@@ -189,7 +222,7 @@ bool ConvexHull::IsConvex(std::vector<cv::Point> P)
 	{
 		if (OrientationTest::getSign(P[i], P[(i + 1) % n], P[(i + 2) % n]) > 0)
 		{
-			//we check "derivatives" with respect to x for each point, to see we don't have to many sign variations
+			//we check "derivatives" with respect to x for each Point2f, to see we don't have to many sign variations
 			if ((P[i].x - P[(i + 1) % n].x) * (P[(i + 1) % n].x - P[(i + 2) % n].x) < 0)
 			{
 				++signChanges;
@@ -203,7 +236,7 @@ bool ConvexHull::IsConvex(std::vector<cv::Point> P)
 	return true;
 }
 
-cv::Mat ConvexHull::DrawConvex(std::vector<cv::Point> P)
+cv::Mat ConvexHull::DrawConvex(std::vector<cv::Point2f> P)
 {
 	cv::Rect rect = cv::boundingRect(P);
 	cv::Mat img = cv::Mat::zeros(cv::Size(rect.x + rect.width + 10, rect.y + rect.height + 10), CV_8UC3);
@@ -211,8 +244,8 @@ cv::Mat ConvexHull::DrawConvex(std::vector<cv::Point> P)
 
 	for (int i = 0; i < n; ++i)
 	{
-		cv::Point p1 = P[i] + cv::Point(5, 5);
-		cv::Point p2 = P[(i + 1) % n] + cv::Point(5, 5);
+		cv::Point2f p1 = P[i] + cv::Point2f(5, 5);
+		cv::Point2f p2 = P[(i + 1) % n] + cv::Point2f(5, 5);
 		cv::circle(img, p1, 3, cv::Scalar(0, 0, 255));
 		cv::line(img, p1, p2, cv::Scalar(0, 255, 0));
 	}
@@ -222,7 +255,7 @@ cv::Mat ConvexHull::DrawConvex(std::vector<cv::Point> P)
 	return img;
 }
 
-cv::Mat ConvexHull::DrawConvexAndQueryPoint(std::vector<cv::Point> P, cv::Point q, int tangentIndex)
+cv::Mat ConvexHull::DrawConvexAndQueryPoint2f(std::vector<cv::Point2f> P, cv::Point2f q, int tangentIndex)
 {
 	P.push_back(q);
 	cv::Rect rect = cv::boundingRect(P);
@@ -232,11 +265,16 @@ cv::Mat ConvexHull::DrawConvexAndQueryPoint(std::vector<cv::Point> P, cv::Point 
 
 	for (int i = 0; i < n; ++i)
 	{
-		cv::Point p1 = P[i] + cv::Point(5, 5);
-		cv::Point p2 = P[(i + 1) % n] + cv::Point(5, 5);
+		cv::Point2f p1 = P[i] + cv::Point2f(5, 5);
+		cv::Point2f p2 = P[(i + 1) % n] + cv::Point2f(5, 5);
 		if(i == tangentIndex) cv::circle(img, p1, 3, cv::Scalar(0, 255, 255));
 		else cv::circle(img, p1, 3, cv::Scalar(0, 0, 255));
 		cv::line(img, p1, p2, cv::Scalar(0, 255, 0));
+	}
+
+	if (-1 != tangentIndex)
+	{
+		cv::line(img, P[tangentIndex], q, cv::Scalar(255, 255, 255));
 	}
 
 	cv::circle(img, q, 3, cv::Scalar(255, 0, 0));
@@ -247,7 +285,7 @@ cv::Mat ConvexHull::DrawConvexAndQueryPoint(std::vector<cv::Point> P, cv::Point 
 }
 
 
-int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q, cv::Mat debug)
+int ConvexHull::FindRightTangent(std::vector<cv::Point2f> P, cv::Point2f q, cv::Mat debug)
 {
 	int n = P.size();
 	if (n < 3) return -1;
@@ -255,25 +293,27 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q, cv::Mat 
 	int l = 0;
 	int h = n;
 
-	if (P.end() != std::find(P.begin(), P.end(), q))
+	//move outside the func
+	/*if (P.end() != std::find(P.begin(), P.end(), q))
 	{
 		int ind = std::distance(P.begin(), std::find(P.begin(), P.end(), q));
 		return (ind + 1) % n;
-	}
+	}*/
 
 	if ((OrientationTest::getSign(q, P[0], P[n - 1]) > 0) && (OrientationTest::getSign(q, P[0], P[1]) > 0)) return 0;
 
 	for (; ;)
 	{
 		int m = (h + l) / 2;
+		if (0 == m) return -1;
 		int qmm1 = OrientationTest::getSign(q, P[m], P[(m + 1) % n]);
-		if (qmm1 > 0)
+		if (qmm1 > 0.0f)
 		{
-			if (OrientationTest::getSign(q, P[m], P[(m - 1) % n]) > 0) return m;
+			if (OrientationTest::getSign(q, P[m], P[(m - 1) % n]) > 0.0f) return m;
 		}
 
 		//segment beginning configuration
-		if (OrientationTest::getSign(q, P[l], P[(l + 1) % n]) < 0)
+		if (OrientationTest::getSign(q, P[l], P[(l + 1) % n]) < 0.0f)
 		{
 			if (qmm1 > 0)
 			{
@@ -281,7 +321,7 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q, cv::Mat 
 			}
 			else
 			{
-				if (OrientationTest::getSign(q, P[l], P[m]) < 0)
+				if (OrientationTest::getSign(q, P[l], P[m]) < 0.0f)
 				{
 					l = m;
 				}
@@ -299,7 +339,7 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q, cv::Mat 
 			}
 			else
 			{
-				if (OrientationTest::getSign(q, P[l], P[m]) > 0)
+				if (OrientationTest::getSign(q, P[l], P[m]) > 0.0f)
 				{
 					h = m;
 				}
@@ -313,7 +353,7 @@ int ConvexHull::FindRightTangent(std::vector<cv::Point> P, cv::Point q, cv::Mat 
 }
 
 
-int ConvexHull::FindMaximalDotProduct(std::vector<cv::Point> P, cv::Point q, cv::Mat debug)
+int ConvexHull::FindMaximalDotProduct(std::vector<cv::Point2f> P, cv::Point2f q, cv::Mat debug)
 {
 	int n = P.size();
 	if (n < 3) return -1;

@@ -12,35 +12,35 @@ class Polygon
 {
 public:
 
-	/** @brief constructor that stores the given points as a polygon connected in a CCW order 
-		@param points - list of 2D points defining the polygon
+	/** @brief constructor that stores the given Point2fs as a polygon connected in a CCW order 
+		@param Point2fs - list of 2D Point2fs defining the polygon
 		@return
 	**/
-	Polygon(std::vector<cv::Point> points = std::vector<cv::Point>());
+	Polygon(std::vector<cv::Point2f> Point2fs = std::vector<cv::Point2f>());
 
-	/** @brief generates a polygon constructed of n random points in range 
-		@param numPoints - number of points in polygon
-		@param xRange - maximal values on x axis for points
-		@param yRange - maximal values on y axis for points
+	/** @brief generates a polygon constructed of n random Point2fs in range 
+		@param numPoint2fs - number of Point2fs in polygon
+		@param xRange - maximal values on x axis for Point2fs
+		@param yRange - maximal values on y axis for Point2fs
 		@return the polygon as a CCW list of vertices
 	**/
-	std::vector<cv::Point> GenerateRandom(int numPoints, int xRange, int yRange);
+	std::vector<cv::Point2f> GenerateRandom(int numPoint2fs, int xRange, int yRange);
 
-	/** @brief connects n points into a polygon in CCW order
-		@param points - list of 2D points defining the polygon
+	/** @brief connects n Point2fs into a polygon in CCW order
+		@param Point2fs - list of 2D Point2fs defining the polygon
 		@return the polygon as a CCW list of vertices
 	**/
-	std::vector<cv::Point> ConnectCCW(std::vector<cv::Point> points);
+	std::vector<cv::Point2f> ConnectCCW(std::vector<cv::Point2f> Point2fs);
 
-	/** @brief draws the polygon as points connects by lines
-		@param points - list of 2D points defining the polygon
+	/** @brief draws the polygon as Point2fs connects by lines
+		@param Point2fs - list of 2D Point2fs defining the polygon
 		@return an RGB image
 	**/
-	cv::Mat DrawPolygon(std::vector<cv::Point> points);
+	cv::Mat DrawPolygon(std::vector<cv::Point2f> Point2fs);
 
 private:
 
-	std::vector<cv::Point> m_points;
+	std::vector<cv::Point2f> m_Point2fs;
 };
 
 #endif
